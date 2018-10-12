@@ -1,6 +1,6 @@
 # Terraform Remote State steup
 
-Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state, a DynamoDB to lock it, and a IAM user to access it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform [public regristry](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.0.0).
+Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state and a DynamoDB to lock it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform [public regristry](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.0.0).
 <hr />
 
 
@@ -27,7 +27,6 @@ remote_state
   ├── provider.tf         | aws provider
   ├── README.md           | this file
   ├── s3.tf               | create s3 buckets
-  ├── user.tf             | create user
   └── variables.tf        | optional variables
 ```
 <hr />
@@ -40,8 +39,8 @@ remote_state
 export AWS_ACCESS_KEY=$AWS_DEV_ACCESS_KEY && \
 export AWS_SECRET_KEY=$AWS_DEV_SECRET_KEY && \
 export BUCKET_NAME="remote-state-bucket-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1) && \
-export DYNAMODB_TABLE_NAME="dynamodb-state-lock-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)
-export ACCOUNT_ID="insert AWS account ID here"
+export DYNAMODB_TABLE_NAME="dynamodb-state-lock-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1) && \
+export ACCOUNT_ID=$DEV_ID
 ```
 Notes: 
 * Run the above procedure only once! 
@@ -53,33 +52,31 @@ Notes:
 ```bash
 terraform init && \
 terraform apply \
+--var dev_id=$DEV_ID \
+--var prod_id=$PROD_ID \
+--var stage_id=$STAGE_ID \
+--var account_id=$ACCOUNT_ID \
+--var bucket_name=$BUCKET_NAME \
 --var aws_access_key=$AWS_ACCESS_KEY \
 --var aws_secret_key=$AWS_SECRET_KEY \
---var bucket_name=$BUCKET_NAME \
 --var dynamodb_table_name=$DYNAMODB_TABLE_NAME \
---account_id=$ACCOUNT_ID \
--auto-approve
+-auto-approve 
 ```
 
 3. Output should be something like this:
 ```
-Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
+Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 
 Outputs:
 
 dynamodb_table = {
-  arn = arn:aws:dynamodb:us-east-1:975608782524:table/dynamodb-state-lock-ur0dc3a0ww
-  id = dynamodb-state-lock-ur0dc3a0ww
-}
-iam_user = {
-  arn = arn:aws:iam::975608782524:user/bot_terraform
-  keys = The access keys must be created manually on the AWS console!
-  name = bot_terraform
+  arn = arn:aws:dynamodb:us-east-1:975608782524:table/dynamodb-state-lock-g4ghhq1px0
+  id = dynamodb-state-lock-g4ghhq1px0
 }
 s3_bucket = {
-  arn = arn:aws:s3:::remote-state-bucket-dsu0tmdqr1
-  bucket_domain_name = remote-state-bucket-dsu0tmdqr1.s3.amazonaws.com
-  id = remote-state-bucket-dsu0tmdqr1
+  arn = arn:aws:s3:::remote-state-bucket-z0cne5ap3x
+  bucket_domain_name = remote-state-bucket-z0cne5ap3x.s3.amazonaws.com
+  id = remote-state-bucket-z0cne5ap3x
 }
 ```
 <hr />
@@ -90,8 +87,7 @@ s3_bucket = {
 
 **Why?** If you are using Terraform by yourself, managing state locally might be enough. However, when working in teams, different team members must have the same infrastructure representation (state!). If this is not the case, and each member of the team has the state stored locally, the infrastructure will break easily, because **a change made by one person will not propagate to the others**. The way to overcome this is using [remote state](https://www.terraform.io/docs/providers/terraform/d/remote_state.html).  
 
-**How?** The remote state will be stored in AWS S3. A bucket is created, and the state file is stored there. As to guarantee that the state is only accessed by one person at a time, a DynamoDb table is used to lock it. Finally, the access to the state is restricted to a single user (which is also created by this script).
-**In summary: &nbsp;  s3 bucket +++ dynamodb table +++ single user access**.
+**How?** The remote state will be stored in AWS S3. A bucket is created, and the state file is stored there. As to guarantee that the state is only accessed by one person at a time, a DynamoDb table is used to lock it. The bucket and table have limited permissions. **In summary: &nbsp;  s3 bucket +++ dynamodb table +++ permissions**.
 <hr />
 
 
@@ -102,7 +98,10 @@ There a total of 8 input variables (required variables are marked with a (*) sym
 - aws_secret_key                  | required
 - bucket_name                     | required
 - dynamodb_table_name             | required
-- account_id                      | required - AWS account ID
+- account_id                      | required - AWS account ID where the state is stores
+- dev_id                          | required  
+- prod_id                         | required  
+- stage_id                        | required 
 - region                          | defaults to "us-east-1"
 - remote_state_file_name          | defaults to "state_terraform"
 - username_terraform              | defaults to "bot_terraform"
@@ -120,36 +119,28 @@ Running the deployment procedure will output 3 variables (and the corresponding 
   * arn
   * id 
   * bucket_domain_name
-- iam_user
-  * arn
-  * name
 ```
 <hr />
 
 
 ## Security
-* This script deploys an s3 bucket with an identity-based policy that restricts the access to a single user.
-* This user is the one created by this script.
-* Upon creating the user, its credentials are not set. This has to be done manually using the AWS console.
+* This script deploys an s3 bucket and dynamodb table with an identity-based policy. 
+* **It allows access to anyone with access to dev/stage/prod account.**
+* This is not the safest option out there.
 
-Request to get a file inside the state bucket
-  * using my personal account (**failure**):
-    ```
-    An error occurred (AccessDenied) when calling the GetObject operation: Access Denied
-    ```
-  * using bot_terraform user (**success**):
-    ```
-    {
-        "AcceptRanges": "bytes",
-        "LastModified": "Thu, 11 Oct 2018 13:07:03 GMT",
-        "ContentLength": 3008,
-        "ETag": "\"d34dcfda04346be26fd299c3065af6fc\"",                           
-        "VersionId": "sS_3Rq54lvymgZA8z6xSW3t2QgfqD5Oc",
-        "ContentType": "text/html",
-        "ServerSideEncryption": "AES256",
-        "Metadata": {}
-    }
-    ```
+Why did we opt for this, instead of locking the access to a **single** user?
+
+Consider this scenario:
+  * you use this module (with the single user functionality) and deploy a remote state;
+  * now you want to create a new and bigger project (a); 
+  * you use this module as the base to create the state for (a);
+  * you deploy (a) using the reffered user;
+  * the deployment tries to access some AWS resource, like CloudFormation;
+  * you get an error stating **permissions denied**;
+  * you go back and give this user the required extra permissions;
+  * you would do this for every project, always changing the source code related to the user inside this module.
+
+If, eventually, we really want to use an user for single access, we should create it separately, and receive its information as an input argument.
 <hr />
 
 
@@ -174,4 +165,5 @@ Here is some useful reading material (for multiple purposes):
 * [policies with terraform - **guide**](https://www.terraform.io/docs/providers/aws/guides/iam-policy-documents.html)
 * [terraform policy **Document**](https://www.terraform.io/docs/providers/aws/d/iam_policy_document.html), [policy **Attachment**](https://www.terraform.io/docs/providers/aws/r/iam_policy_attachment.html), [iam **Policy**](https://www.terraform.io/docs/providers/aws/r/iam_policy.html)
 * [publish modules to terraform registry](https://www.terraform.io/docs/registry/modules/publish.html) and [standard module structure](https://www.terraform.io/docs/modules/create.html#standard-module-structure)
+* [S3 backend config](https://www.terraform.io/docs/backends/types/s3.html)
 <hr />
