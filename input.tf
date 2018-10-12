@@ -18,11 +18,6 @@ variable "dynamodb_table_name" {
   description = "The name of the DynamoDb table used to lock the state"
 }
 
-variable "account_id" {
-  type        = "string"
-  description = "The ID number of the Account where the dynamodb table lives"
-}
-
 variable "dev_id" {
   type        = "string"
   description = "The ID number of the DEV account"
@@ -36,4 +31,9 @@ variable "prod_id" {
 variable "stage_id" {
   type        = "string"
   description = "The ID number of the STAGING account"
+}
+
+variable "account_id" {
+  type        = "string"
+  description = "The ID number of the account where the state is being deployed to"
 }
