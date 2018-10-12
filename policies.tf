@@ -6,7 +6,11 @@ data "aws_iam_policy_document" "iam_policy_document_s3" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_iam_user.iam_user.arn}"]
+      identifiers = [
+        "arn:aws:iam::${var.dev_id}:root",
+        "arn:aws:iam::${var.prod_id}:root",
+        "arn:aws:iam::${var.stage_id}:root"
+      ]
     }
   }
 
@@ -17,7 +21,11 @@ data "aws_iam_policy_document" "iam_policy_document_s3" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_iam_user.iam_user.arn}"]
+      identifiers = [
+        "arn:aws:iam::${var.dev_id}:root",
+        "arn:aws:iam::${var.prod_id}:root",
+        "arn:aws:iam::${var.stage_id}:root"
+      ]
     }
   }
 }
@@ -35,7 +43,11 @@ data "aws_iam_policy_document" "iam_policy_document_dynamodb" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_iam_user.iam_user.arn}"]
+      identifiers = [
+        "arn:aws:iam::${var.dev_id}:root",
+        "arn:aws:iam::${var.prod_id}:root",
+        "arn:aws:iam::${var.stage_id}:root"
+      ]
     }
   }
 }

@@ -67,20 +67,7 @@ Apply complete! Resources: 6 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-dynamodb_table = {
-  arn = arn:aws:dynamodb:us-east-1:975608782524:table/dynamodb-state-lock-ur0dc3a0ww
-  id = dynamodb-state-lock-ur0dc3a0ww
-}
-iam_user = {
-  arn = arn:aws:iam::975608782524:user/bot_terraform
-  keys = The access keys must be created manually on the AWS console!
-  name = bot_terraform
-}
-s3_bucket = {
-  arn = arn:aws:s3:::remote-state-bucket-dsu0tmdqr1
-  bucket_domain_name = remote-state-bucket-dsu0tmdqr1.s3.amazonaws.com
-  id = remote-state-bucket-dsu0tmdqr1
-}
+
 ```
 <hr />
 

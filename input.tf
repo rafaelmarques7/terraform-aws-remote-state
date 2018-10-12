@@ -22,3 +22,18 @@ variable "account_id" {
   type        = "string"
   description = "The ID number of the Account where the dynamodb table lives"
 }
+
+variable "dev_id" {
+  type        = "string"
+  description = "The ID number of the DEV account"
+}
+
+variable "prod_id" {
+  type        = "string"
+  description = "The ID number of the PROD account"
+}
+
+variable "stage_id" {
+  type        = "string"
+  description = "The ID number of the STAGING account"
+}
