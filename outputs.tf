@@ -16,16 +16,3 @@ output "dynamodb_table" {
     arn = "${aws_dynamodb_table.dynamodb_table.arn}"
   }
 }
-
-output "iam_user" {
-  description = <<EOF
-        Information regarding the IAM user account created to manage the terraform state bucket and table. 
-        Note that the access keys must be created manualy in the AWS console.
-    EOF
-
-  value {
-    arn  = "${aws_iam_user.iam_user.arn}"
-    name = "${aws_iam_user.iam_user.name}"
-    keys = "The access keys must be created manually on the AWS console!"
-  }
-}

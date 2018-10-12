@@ -57,7 +57,7 @@ terraform apply \
 --var aws_secret_key=$AWS_SECRET_KEY \
 --var bucket_name=$BUCKET_NAME \
 --var dynamodb_table_name=$DYNAMODB_TABLE_NAME \
---account_id=$ACCOUNT_ID \
+--var account_id=$ACCOUNT_ID \
 -auto-approve
 ```
 
@@ -174,4 +174,5 @@ Here is some useful reading material (for multiple purposes):
 * [policies with terraform - **guide**](https://www.terraform.io/docs/providers/aws/guides/iam-policy-documents.html)
 * [terraform policy **Document**](https://www.terraform.io/docs/providers/aws/d/iam_policy_document.html), [policy **Attachment**](https://www.terraform.io/docs/providers/aws/r/iam_policy_attachment.html), [iam **Policy**](https://www.terraform.io/docs/providers/aws/r/iam_policy.html)
 * [publish modules to terraform registry](https://www.terraform.io/docs/registry/modules/publish.html) and [standard module structure](https://www.terraform.io/docs/modules/create.html#standard-module-structure)
+* [S3 backend config](https://www.terraform.io/docs/backends/types/s3.html)
 <hr />
