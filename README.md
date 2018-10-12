@@ -1,6 +1,6 @@
 # Terraform Remote State steup
 
-Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state, a DynamoDB to lock it, and a IAM user to access it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state.
+Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state, a DynamoDB to lock it, and a IAM user to access it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform [public regristry](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.0.0).
 <hr />
 
 
@@ -41,6 +41,7 @@ export AWS_ACCESS_KEY=$AWS_DEV_ACCESS_KEY && \
 export AWS_SECRET_KEY=$AWS_DEV_SECRET_KEY && \
 export BUCKET_NAME="remote-state-bucket-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1) && \
 export DYNAMODB_TABLE_NAME="dynamodb-state-lock-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)
+export ACCOUNT_ID="insert AWS account ID here"
 ```
 Notes: 
 * Run the above procedure only once! 
@@ -56,6 +57,7 @@ terraform apply \
 --var aws_secret_key=$AWS_SECRET_KEY \
 --var bucket_name=$BUCKET_NAME \
 --var dynamodb_table_name=$DYNAMODB_TABLE_NAME \
+--account_id=$ACCOUNT_ID \
 -auto-approve
 ```
 
