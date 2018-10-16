@@ -1,3 +1,4 @@
+# The DynamoDb table that locks the state file
 resource "aws_dynamodb_table" "dynamodb_table" {
   name           = "${var.dynamodb_table_name}"
   read_capacity  = 1

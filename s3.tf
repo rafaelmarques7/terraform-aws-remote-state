@@ -1,3 +1,8 @@
+# Create S3 bucket 
+#   - enable versioning     (backups)
+#   - apply policies        (security)
+#   - apply encription      (security)
+#   - apply prevent_destroy (robustness)
 resource "aws_s3_bucket" "s3_bucket" {
   bucket = "${var.bucket_name}"
   policy = "${data.aws_iam_policy_document.iam_policy_document_s3.json}"
@@ -19,6 +24,7 @@ resource "aws_s3_bucket" "s3_bucket" {
   }
 }
 
+# Add one file - not required - this is used to verify the policies work properly
 resource "aws_s3_bucket_object" "index_page" {
   bucket       = "${aws_s3_bucket.s3_bucket.bucket}"
   key          = "README.md"
