@@ -33,7 +33,7 @@ remote_state
 
 
 ## Deployment
-1. Set the necessary variables - generate a pseudo_random string for the s3 bucket and dynamodb table, and do set the AWS credentials
+1. Generate and set the required [input arguments](#input-arguments).
 
 ```
 export ACCOUNT_ID=$DEV_ID && \
@@ -48,7 +48,7 @@ Notes:
 * Run the above procedure only once! 
   * The S3 bucket has a lifecycle protection rule. 
   * Every time this is run, a new bucket and dynamodb table name is created. 
-  * Thus, it will raise an error upon running terraform for a 2nd time, because the state (bucket reference) is different.
+  * Thus, upon running terraform for a 2nd time, it will raise an error, because the state (and, in particular, the bucket reference) is different.
 
 2. Run terraform with the required input.
 ```bash
@@ -70,13 +70,13 @@ Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 Outputs:
 
 dynamodb_table = {
-  arn = arn:aws:dynamodb:us-east-1:975608782524:table/dynamodb-state-lock-g4ghhq1px0
-  id = dynamodb-state-lock-g4ghhq1px0
+  arn = arn:aws:dynamodb:xxx
+  id = xxx
 }
 s3_bucket = {
-  arn = arn:aws:s3:::remote-state-bucket-z0cne5ap3x
-  bucket_domain_name = remote-state-bucket-z0cne5ap3x.s3.amazonaws.com
-  id = remote-state-bucket-z0cne5ap3x
+  arn = arn:aws:s3:::xxx
+  bucket_domain_name = xxx
+  id = xxx
 }
 ```
 <hr />
@@ -94,25 +94,25 @@ s3_bucket = {
 
 
 ## Input arguments
-There a total of 6 required input arguments:
+There a total of **6 required input arguments**:
 ```
         VARIABLE NAME             |        DETAILS
--------------------------------------------------------------------------------------------------
-- aws_access_key                  | AWS account id
-- aws_secret_key                  | AWS account password
-- bucket_name                     | Name of the bucket (must be unique for the entire world!)
-- dynamodb_table_name             | Name of the DynamoDb Table
-- account_id                      | AWS account ID where the state is stored
-- list_account_ids                | List of account ID's that require access to the state
+-------------------------------------------------------------------------------------------------------
+- aws_access_key                  | AWS account id.
+- aws_secret_key                  | AWS account password.
+- bucket_name                     | Name of the bucket (must be unique for the entire world!).
+- dynamodb_table_name             | Name of the DynamoDb Table.
+- account_id                      | AWS account ID where the state is stored.
+- list_account_ids                | List of account ID's that require access to the state.
 ```
 
-and 2 optinal input arguments 
+and 2 **optional input arguments**:
 
 ```
-        VARIABLE NAME             |     DETAILS/DEFAULTS
-----------------------------------------------------------------------------
-- region                          | defaults to "us-east-1"
-- remote_state_file_name          | The name of the state-file. defaults to "state_terraform"
+        VARIABLE NAME             |     DEFAULTS        |       DETAILS
+--------------------------------------------------------------------------------------------------------
+- region                          | us-east-1           | AWS region where terraform stack is created.
+- remote_state_file_name          | state_terraform     | Name of remote state file.
 ```
 <hr />
 
