@@ -1,6 +1,6 @@
 # Terraform Remote State setup
 
-Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state and a DynamoDB to lock it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform regristry: [terraform-aws-remote=state](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.1.0).
+Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state and a DynamoDB to lock it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform regristry: [terraform-aws-remote-state](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.1.0).
 <hr />
 
 
