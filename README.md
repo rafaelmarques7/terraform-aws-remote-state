@@ -1,6 +1,6 @@
-# Terraform Remote State steup
+# Terraform Remote State setup
 
-Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state and a DynamoDB to lock it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform regristry: [terraform-aws-remote=state](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.1.0).
+Generates the necessary infrastructure and permissions to manage the Terraform state remotely. This creates an AWS s3 bucket to store the state and a DynamoDB to lock it. It also restricts the permissions of each of these elements, by applying the appropriate policies. This module can be used upon the creation of other more complex projects, to setup the remote state. This module can be found at the terraform regristry: [terraform-aws-remote-state](https://registry.terraform.io/modules/rafaelmarques7/remote-state/aws/1.1.0).
 <hr />
 
 
@@ -33,32 +33,32 @@ remote_state
 
 
 ## Deployment
-1. Set the necessary variables - generate a pseudo_random string for the s3 bucket and dynamodb table, and do set the AWS credentials
+1. Generate and set the required [input arguments](#input-arguments).
 
-```bash 
+```
+export ACCOUNT_ID=$DEV_ID && \
 export AWS_ACCESS_KEY=$AWS_DEV_ACCESS_KEY && \
 export AWS_SECRET_KEY=$AWS_DEV_SECRET_KEY && \
+export LIST_ACCOUNTS=["\"$DEV_ID"\","\"$PROD_ID"\","\"$STAGE_ID"\"] && \
 export BUCKET_NAME="remote-state-bucket-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1) && \
-export DYNAMODB_TABLE_NAME="dynamodb-state-lock-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1) && \
-export ACCOUNT_ID=$DEV_ID
+export DYNAMODB_TABLE_NAME="dynamodb-state-lock-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)
 ```
+
 Notes: 
 * Run the above procedure only once! 
   * The S3 bucket has a lifecycle protection rule. 
   * Every time this is run, a new bucket and dynamodb table name is created. 
-  * Thus, it will raise an error upon running terraform for a 2nd time, because the state (bucket reference) is different.
+  * Thus, upon running terraform for a 2nd time, it will raise an error, because the state (and, in particular, the bucket reference) is different.
 
 2. Run terraform with the required input.
 ```bash
 terraform init && \
 terraform apply \
---var dev_id=$DEV_ID \
---var prod_id=$PROD_ID \
---var stage_id=$STAGE_ID \
 --var account_id=$ACCOUNT_ID \
 --var bucket_name=$BUCKET_NAME \
 --var aws_access_key=$AWS_ACCESS_KEY \
 --var aws_secret_key=$AWS_SECRET_KEY \
+--var list_account_ids=$LIST_ACCOUNTS \
 --var dynamodb_table_name=$DYNAMODB_TABLE_NAME \
 -auto-approve 
 ```
@@ -70,13 +70,13 @@ Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 Outputs:
 
 dynamodb_table = {
-  arn = arn:aws:dynamodb:us-east-1:975608782524:table/dynamodb-state-lock-g4ghhq1px0
-  id = dynamodb-state-lock-g4ghhq1px0
+  arn = arn:aws:dynamodb:xxx
+  id = xxx
 }
 s3_bucket = {
-  arn = arn:aws:s3:::remote-state-bucket-z0cne5ap3x
-  bucket_domain_name = remote-state-bucket-z0cne5ap3x.s3.amazonaws.com
-  id = remote-state-bucket-z0cne5ap3x
+  arn = arn:aws:s3:::xxx
+  bucket_domain_name = xxx
+  id = xxx
 }
 ```
 <hr />
@@ -87,30 +87,38 @@ s3_bucket = {
 
 **Why?** If you are using Terraform by yourself, managing state locally might be enough. However, when working in teams, different team members must have the same infrastructure representation (state!). If this is not the case, and each member of the team has the state stored locally, the infrastructure will break easily, because **a change made by one person will not propagate to the others**. The way to overcome this is using [remote state](https://www.terraform.io/docs/providers/terraform/d/remote_state.html).  
 
-**How?** The remote state will be stored in AWS S3. A bucket is created, and the state file is stored there. As to guarantee that the state is only accessed by one person at a time, a DynamoDb table is used to lock it. The bucket and table have limited permissions. **In summary: &nbsp;  s3 bucket +++ dynamodb table +++ permissions**.
+**How?** The remote state will be stored in AWS S3. A bucket is created, and the state file is stored there. As to guarantee that the state is only accessed by one person at a time, a DynamoDb table is used to lock it. The bucket and table have limited permissions.
+
+ **In summary: &nbsp;  s3 bucket +++ dynamodb table +++ permissions**.
 <hr />
 
 
 ## Input arguments
-There a total of 8 input variables (required variables are marked with a (*) symbol):
+There a total of **6 required input arguments**:
 ```
-- aws_access_key                  | required    
-- aws_secret_key                  | required
-- bucket_name                     | required
-- dynamodb_table_name             | required
-- account_id                      | required - AWS account ID where the state is stores
-- dev_id                          | required  
-- prod_id                         | required  
-- stage_id                        | required 
-- region                          | defaults to "us-east-1"
-- remote_state_file_name          | defaults to "state_terraform"
-- username_terraform              | defaults to "bot_terraform"
+        VARIABLE NAME             |        DETAILS
+-------------------------------------------------------------------------------------------------------
+- aws_access_key                  | AWS account id.
+- aws_secret_key                  | AWS account password.
+- bucket_name                     | Name of the bucket (must be unique for the entire world!).
+- dynamodb_table_name             | Name of the DynamoDb Table.
+- account_id                      | AWS account ID where the state is stored.
+- list_account_ids                | List of account ID's that require access to the state.
+```
+
+and 2 **optional input arguments**:
+
+```
+        VARIABLE NAME             |     DEFAULTS        |       DETAILS
+--------------------------------------------------------------------------------------------------------
+- region                          | us-east-1           | AWS region where terraform stack is created.
+- remote_state_file_name          | state_terraform     | Name of remote state file.
 ```
 <hr />
 
 
 ## Output 
-Running the deployment procedure will output 3 variables (and the corresponding properties):
+Running the deployment procedure will output 2 variables and the corresponding properties:
 ```
 - dynamodb_table
   * arn
@@ -125,7 +133,7 @@ Running the deployment procedure will output 3 variables (and the corresponding 
 
 ## Security
 * This script deploys an s3 bucket and dynamodb table with an identity-based policy. 
-* **It allows access to anyone with access to dev/stage/prod account.**
+* **It gives access to all accounts listed in $LIST_ACCOUNT_IDS.**
 * This is not the safest option out there.
 
 Why did we opt for this, instead of locking the access to a **single** user?

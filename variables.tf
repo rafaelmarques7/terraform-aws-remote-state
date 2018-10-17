@@ -9,9 +9,3 @@ variable "region" {
   description = "The AWS region where the terraform stack is created"
   default     = "us-east-1"
 }
-
-variable "username_terraform" {
-  type        = "string"
-  description = "The username for the terraform user account"
-  default     = "bot_terraform"
-}

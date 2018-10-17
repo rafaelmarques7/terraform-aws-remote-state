@@ -1,3 +1,11 @@
+# Create local variable for setting principals.identifiers
+locals {
+  accounts_arn = "${formatlist("arn:aws:iam::%s:root", var.list_account_ids)}"
+}
+
+# S3 policy 
+#  - grant access to bucket and its files only 
+#  - grant access to everyone in var.list_account_ids
 data "aws_iam_policy_document" "iam_policy_document_s3" {
   statement {
     effect    = "Allow"
@@ -5,13 +13,8 @@ data "aws_iam_policy_document" "iam_policy_document_s3" {
     resources = ["arn:aws:s3:::${var.bucket_name}"]
 
     principals {
-      type = "AWS"
-
-      identifiers = [
-        "arn:aws:iam::${var.dev_id}:root",
-        "arn:aws:iam::${var.prod_id}:root",
-        "arn:aws:iam::${var.stage_id}:root"
-      ]
+      type        = "AWS"
+      identifiers = ["${local.accounts_arn}"]
     }
   }
 
@@ -21,17 +24,15 @@ data "aws_iam_policy_document" "iam_policy_document_s3" {
     resources = ["arn:aws:s3:::${var.bucket_name}/*"]
 
     principals {
-      type = "AWS"
-
-      identifiers = [
-        "arn:aws:iam::${var.dev_id}:root",
-        "arn:aws:iam::${var.prod_id}:root",
-        "arn:aws:iam::${var.stage_id}:root"
-      ]
+      type        = "AWS"
+      identifiers = ["${local.accounts_arn}"]
     }
   }
 }
 
+# DynamoDB table policy 
+#  - grant access table only
+#  - grant access to everyone in var.list_account_ids
 data "aws_iam_policy_document" "iam_policy_document_dynamodb" {
   statement {
     effect    = "Allow"
@@ -44,13 +45,8 @@ data "aws_iam_policy_document" "iam_policy_document_dynamodb" {
     ]
 
     principals {
-      type = "AWS"
-
-      identifiers = [
-        "arn:aws:iam::${var.dev_id}:root",
-        "arn:aws:iam::${var.prod_id}:root",
-        "arn:aws:iam::${var.stage_id}:root"
-      ]
+      type        = "AWS"
+      identifiers = ["${local.accounts_arn}"]
     }
   }
 }
