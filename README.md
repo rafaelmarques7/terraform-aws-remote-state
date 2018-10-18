@@ -81,6 +81,11 @@ s3_bucket = {
 ```
 <hr />
 
+4. It is possible to export the output values, using, for example:
+```bash
+export BUCKET_NAME=`terraform output -json s3_bucket | jq ".value.id"`
+```
+
 
 ## WWH - what, why, how
 **What?** This is a terraform script to automate the process of deploying the necessary infrastructure to manage Terraform state remotely. It can be **used to setup any Terraform project**.
