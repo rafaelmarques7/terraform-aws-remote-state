@@ -15,7 +15,6 @@ Generates the necessary infrastructure and permissions to manage the Terraform s
   - [Security](#security)
   - [Common Problems](#common-problems)
   - [Reading material](#reading-material)
-  - [cloudformation remote stack](#cloudformation-remote-stack)
 <hr />
 
 
@@ -160,7 +159,3 @@ Here is some useful reading material (for multiple purposes):
 * [publish modules to terraform registry](https://www.terraform.io/docs/registry/modules/publish.html) and [standard module structure](https://www.terraform.io/docs/modules/create.html#standard-module-structure)
 * [S3 backend config](https://www.terraform.io/docs/backends/types/s3.html)
 <hr />
-
-## cloudformation remote stack
-
-*  [Cloudformation](https://github.com/EconomistDigitalSolutions/gbr-cms/tree/stage/alibaba_cdn/terraform)
