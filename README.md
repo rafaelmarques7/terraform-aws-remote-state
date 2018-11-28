@@ -15,21 +15,17 @@ Generates the necessary infrastructure and permissions to manage the Terraform s
   - [Security](#security)
   - [Common Problems](#common-problems)
   - [Reading material](#reading-material)
+  - [cloudformation remote stack](#cloudformation-remote-stack)
 <hr />
 
-asd a
+
 ## Folder structure
 ```
 remote_state
-  ├── dynamodb.tf         | dynamodb_table
-  ├── input.tf            | required variables
-  ├── main.tf             | empty file
+  ├── main.tf             | remote state setup
   ├── outputs.tf          | provided output
-  ├── policies.tf         | create policies
-  ├── provider.tf         | aws provider
-  ├── README.md           | this file
-  ├── s3.tf               | create s3 buckets
-  └── variables.tf        | optional variables
+  ├── variables.tf        | input arguments 
+  └── README.md           | this file 
 ```
 <hr />
 
@@ -39,9 +35,8 @@ remote_state
 
 ```
 export ACCOUNT_ID=$DEV_ID && \
-export AWS_ACCESS_KEY=$AWS_DEV_ACCESS_KEY && \
-export AWS_SECRET_KEY=$AWS_DEV_SECRET_KEY && \
-export LIST_ACCOUNTS=["\"$DEV_ID"\","\"$PROD_ID"\","\"$STAGE_ID"\"] && \
+export AWS_PROFILE=$AWS_PROFILE_NAME && \
+export LIST_ACCOUNTS=["\"$DEV_ID"\"] && \
 export BUCKET_NAME="remote-state-bucket-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1) && \
 export DYNAMODB_TABLE_NAME="dynamodb-state-lock-"$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 10 | head -n 1)
 ```
@@ -71,22 +66,13 @@ Apply complete! Resources: 3 added, 0 changed, 0 destroyed.
 
 Outputs:
 
-dynamodb_table = {
-  arn = arn:aws:dynamodb:xxx
-  id = xxx
-}
-s3_bucket = {
-  arn = arn:aws:s3:::xxx
-  bucket_domain_name = xxx
-  id = xxx
-}
+* s3_bucket_domain_name
+* s3_bucket_id
+* dynamodb_table_id
 ```
+
 <hr />
 
-4. It is possible to export the output values, using, for example:
-```bash
-export BUCKET_NAME=`terraform output -json s3_bucket | jq ".value.id"`
-```
 
 
 ## WWH - what, why, how
@@ -101,40 +87,32 @@ export BUCKET_NAME=`terraform output -json s3_bucket | jq ".value.id"`
 
 
 ## Input arguments
-There a total of **6 required input arguments**:
-```
-        VARIABLE NAME             |        DETAILS
--------------------------------------------------------------------------------------------------------
-- aws_access_key                  | AWS account id.
-- aws_secret_key                  | AWS account password.
-- bucket_name                     | Name of the bucket (must be unique for the entire world!).
-- dynamodb_table_name             | Name of the DynamoDb Table.
-- account_id                      | AWS account ID where the state is stored.
-- list_account_ids                | List of account ID's that require access to the state.
-```
 
-and 2 **optional input arguments**:
+List of input arguments:
 
-```
-        VARIABLE NAME             |     DEFAULTS        |       DETAILS
---------------------------------------------------------------------------------------------------------
-- region                          | us-east-1           | AWS region where terraform stack is created.
-- remote_state_file_name          | state_terraform     | Name of remote state file.
-```
+| Name | Description | Type | Default | Required |
+|------|-------------|:----:|:-----:|:-----:|
+| account\_id | The ID number of the account to where the state is being deployed. | string | - | yes |
+| aws-profile | The AWS profile name. | string | - | yes |
+| aws-region | The AWS region where the terraform stack is created | string | `eu-west-1` | no |
+| bucket\_name | The name for the bucket where the remote state is saved. | string | - | yes |
+| dynamodb\_table\_name | The name of the DynamoDb table used to lock the state. | string | - | yes |
+| list\_account\_ids | A list containing IDs of account that may access the state. | list | - | yes |
+| remote\_state\_file\_name | The name for the file where the remote state is saved | string | `state_terraform` | no |
+
 <hr />
 
 
 ## Output 
-Running the deployment procedure will output 2 variables and the corresponding properties:
-```
-- dynamodb_table
-  * arn
-  * id
-- state_bucket
-  * arn
-  * id 
-  * bucket_domain_name
-```
+
+List of output variables:
+
+| Name | Description |
+|------|-------------|
+| dynamodb-table-id | The DynamoDB table ID. |
+| s3-bucket-domain-name | The state bucket domain name. |
+| s3-bucket-id | The state bucket ID. |
+
 <hr />
 
 
@@ -182,3 +160,7 @@ Here is some useful reading material (for multiple purposes):
 * [publish modules to terraform registry](https://www.terraform.io/docs/registry/modules/publish.html) and [standard module structure](https://www.terraform.io/docs/modules/create.html#standard-module-structure)
 * [S3 backend config](https://www.terraform.io/docs/backends/types/s3.html)
 <hr />
+
+## cloudformation remote stack
+
+*  [Cloudformation](https://github.com/EconomistDigitalSolutions/gbr-cms/tree/stage/alibaba_cdn/terraform)

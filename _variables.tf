@@ -1,11 +1,6 @@
-variable "aws_access_key" {
+variable "aws-profile" {
   type        = "string"
-  description = "The AWS account access key (id)."
-}
-
-variable "aws_secret_key" {
-  type        = "string"
-  description = "The AWS account secret key (password)."
+  description = "The AWS profile name."
 }
 
 variable "bucket_name" {
@@ -26,4 +21,16 @@ variable "list_account_ids" {
 variable "account_id" {
   type        = "string"
   description = "The ID number of the account to where the state is being deployed."
+}
+
+variable "remote_state_file_name" {
+  type        = "string"
+  description = "The name for the file where the remote state is saved"
+  default     = "state_terraform"
+}
+
+variable "aws-region" {
+  type        = "string"
+  description = "The AWS region where the terraform stack is created"
+  default     = "eu-west-1"
 }
